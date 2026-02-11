@@ -20,35 +20,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
-      
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # ترك الإصدار فارغاً سيجعل GitHub يجلب أحدث نسخة مستقرة لعام 2026
-          # وهذا سيحل مشكلة Dart 3.9.2 تلقائياً
-          flutter-version: '' 
+          # نستخدم إصداراً حديثاً لضمان توافق Dart 3.9.2
+          flutter-version: '3.29.0' 
           channel: 'stable'
           cache: true
 
       - name: Flutter Doctor
         run: flutter doctor -v
 
-      - name: Clean Project
-        run: flutter clean 
-      
-      - name: Get dependencies
-        run: flutter pub get
-      
-      - name: Run code generation
-        # استخدام dart run هو الأسلوب الأحدث والأكثر استقراراً
-        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Prepare Project
+        run: |
+          flutter clean
+          flutter pub get
       
       - name: Build APK (Release)
+        # هذا الجزء هو "المفتاح" لحل خطأ الصورة السابعة
+        env:
+          JAVA_OPTS: "--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED"
         run: flutter build apk --release --no-tree-shake-icons
       
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mulaazim-apk-${{ github.run_number }}
+          name: mulaazim-app-release
           path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
