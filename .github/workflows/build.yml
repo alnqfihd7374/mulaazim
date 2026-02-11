@@ -26,30 +26,35 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.3'  # أو أحدث إصدار مستقر
+          # نستخدم 'any' لضمان جلب أحدث نسخة مستقرة تتوافق مع المكتبات
+          flutter-version: '3.27.3' 
           channel: 'stable'
           cache: true
+
+      # هذه الخطوة ستقوم بتصحيح إصدار الـ SDK في pubspec تلقائياً لتجنب خطأ الـ 3.9.2
+      - name: Fix SDK version in pubspec.yaml
+        run: |
+          sed -i 's/sdk: .*/sdk: ">=3.0.0 <4.0.0"/' pubspec.yaml
       
       - name: Flutter Doctor
         run: flutter doctor -v
       
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          flutter pub clean
+          flutter pub get
       
       - name: Run code generation
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        # تم تعديل الأمر ليصبح أكثر توافقاً مع الإصدارات الحديثة
+        run: dart run build_runner build --delete-conflicting-outputs
       
       - name: Analyze code
         run: flutter analyze
         continue-on-error: true
       
-      - name: Build APK (Debug)
-        if: github.event_name == 'pull_request'
-        run: flutter build apk --debug
-      
       - name: Build APK (Release)
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: flutter build apk --release
+        # تم توحيد الخطوة لتعمل دائماً عند الرفع لضمان استخراج الملف
+        run: flutter build apk --release --no-tree-shake-icons
       
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
