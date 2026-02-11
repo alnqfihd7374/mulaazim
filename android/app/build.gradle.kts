@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.mulaazim.mulaazim_app"
-    compileSdk = 35  // Latest stable Android API level
+    compileSdk = 36  // Latest stable Android API level
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -25,8 +25,7 @@ android {
         applicationId = "com.mulaazim.mulaazim_app"
         // Minimum SDK 21 (Android 5.0) is required for modern libraries
         minSdk = 21
-        targetSdk = 35
-        versionCode = flutter.versionCode
+        targetSdk = 36        versionCode = flutter.versionCode
         versionName = flutter.versionName
         
         // Enable multidex for apps with many dependencies
@@ -74,3 +73,4 @@ dependencies {
 flutter {
     source = "../.."
 }
+
