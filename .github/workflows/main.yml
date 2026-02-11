@@ -1,0 +1,56 @@
+name: Mulaazim Full Production Build
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. إعداد الجافا (إصدار 17 ضروري لتوافق Gradle و KTS)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # 2. إعداد فلاتر
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 3. تحميل المكتبات
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. بناء نسخة الويب (مع إصلاح مسار المخرجات)
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      # 5. بناء نسخة الأندرويد (مع ضمان نظافة البيئة وتفعيل الصلاحيات)
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew clean
+          cd ..
+          flutter build apk --release
+
+      # 6. رفع ملفات الويب كـ Artifact (ستظهر في قسم المخرجات)
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mulaazim-Web-Production
+          path: build/web
+
+      # 7. رفع ملف الـ APK النهائي كـ Artifact
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mulaazim-Final-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
